@@ -1,0 +1,426 @@
+swagger: "2.0"
+info:
+  description: Homework 8
+  version: "0.0.1"
+  title: Homework 8 API
+  contact:
+    email: yaraslauna.simaka@gmail.com
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+# tags are used for organizing operations
+tags:
+- name: city
+  description: Operations with cities
+- name: user
+  description: Operations with users
+- name: product
+  description: Operations with products  
+paths:
+  /hello:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: hello_world
+    get:
+      description: Returns 'Hello' to the caller
+      # used as the method name of the controller
+      operationId: hello
+      parameters:
+        - name: name
+          in: query
+          description: The name of the person to whom to say hello
+          required: false
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/HelloWorldResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+  /api/city:
+    x-swagger-router-controller: city
+    get:
+      tags:
+      - city
+      summary: Returns random city
+      operationId: getRandomCity
+      description: |
+        By passing in the appropriate options, you can get random city
+      parameters: []
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            $ref: '#/definitions/CityItem'
+  /api/cities:
+    x-swagger-router-controller: city
+    get:
+      tags:
+      - city
+      summary: Returns info about all cities
+      operationId: getAllCities
+      description: |
+          By passing in the appropriate options, you can get information about all cities
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CityItem'
+        400:
+          description: bad input parameter
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+      - city
+      summary: Adds a new city to the system
+      operationId: addNewCity
+      parameters:
+      - in: body
+        name: body
+        description: City object that needs to be added to the system
+        required: true
+        schema:
+          $ref: '#/definitions/CityItem'
+      responses:
+        200:
+          description: created item
+          schema:
+            $ref: '#/definitions/CityItem'
+        400:
+          description: ValidationError
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /api/cities/{cityId}:
+    x-swagger-router-controller: city
+    put:
+      tags:
+      - city
+      summary: Updates an existing city or Adds a new city to the system
+      operationId: updateOrAddCity
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: cityId
+        in: path
+        description: ID of city that needs to be updated
+        required: true
+        type: string
+        format: uuid
+      - in: body
+        name: body
+        description: City object that needs to be added to the system
+        required: true
+        schema:
+          $ref: '#/definitions/CityItem'
+      responses:
+        200:
+          description: Successfully update/add
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        400:
+          description: Validation exception
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+      - city
+      summary: Deletes a city
+      operationId: deleteCityById
+      produces:
+      - application/json
+      parameters:
+      - name: cityId
+        in: path
+        description: City id to delete
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: deleted item
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/CityItem'
+        404:
+          description: Document not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+          
+  /api/users:
+    x-swagger-router-controller: user
+    get:
+      tags:
+      - user
+      summary: Returns info about all users
+      operationId: getAllUsers
+      description: |
+          By passing in the appropriate options, you can get information about all users
+      produces:
+      - application/json
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserItem'
+
+  /api/users/{userId}:
+    x-swagger-router-controller: user
+    delete:
+      tags:
+      - user
+      summary: Deletes a user
+      operationId: deleteUserById
+      produces:
+      - application/json
+      parameters:
+      - name: userId
+        in: path
+        description: User id to delete
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: deleted item
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/UserItem'
+        404:
+          description: Document not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+          
+  /api/products:
+    x-swagger-router-controller: product
+    get:
+      tags:
+      - product
+      summary: Returns info about all products
+      operationId: getAllProducts
+      description: |
+          By passing in the appropriate options, you can get information about all products
+      produces:
+      - application/json
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProductItem'
+    post:
+      tags:
+      - product
+      summary: Adds a new product to the system
+      operationId: addNewProduct
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: product object that needs to be added to the system
+        required: true
+        schema:
+          $ref: '#/definitions/ProductItem'
+      responses:
+        200:
+          description: created item
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/ProductItem'
+        400:
+          description: ValidationError
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    
+  /api/products/{productId}:
+    x-swagger-router-controller: product
+    get:
+      tags:
+      - product
+      summary: Returns info about product
+      operationId: getProductById
+      description: |
+          By passing in the appropriate options, you can get information about product
+      produces:
+      - application/json
+      parameters:
+      - name: productId
+        in: path
+        description: Pet id to find information
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            $ref: '#/definitions/ProductItem'
+        400:
+          description: bad input parameter
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+      - product
+      summary: Deletes a product
+      operationId: deleteProductById
+      produces:
+      - application/json
+      parameters:
+      - name: productId
+        in: path
+        description: Product id to delete
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: deleted item
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/ProductItem'
+        404:
+          description: Document not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+# complex objects have schema definitions
+definitions:
+  HelloWorldResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
+  SuccessResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
+  CityItem:
+    type: object
+    required:
+    - name
+    - capital
+    properties:
+      _id:
+        type: string
+        format: uuid
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      name:
+        type: string
+        example: Moscow
+      country:
+        type: string
+        example: Russia
+      capital:
+        type: boolean
+        example: true
+      location:
+        $ref: '#/definitions/Location'
+      lastModifiedDate:
+        type: string
+        format: date-time
+        example: "2018-07-21T17:32:28Z"
+  Location:
+    type: object
+    properties:
+      lat:
+        type: number
+        format: double
+        example: 56.48
+      long:
+        type: number
+        format: float
+        example: 84.88
+  UserItem:
+    type: object
+    required:
+    - firstName
+    properties:
+      _id:
+        type: string
+        format: uuid
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      firstName:
+        type: string
+        example: Pavel
+      lastName:
+        type: string
+        example: Ivanov
+      email:
+        type: string
+        format: email
+        example: Pavel_Ivanov@host.com
+      lastModifiedDate:
+        type: string
+        format: date-time
+        example: 2018-07-21T17:32:28Z
+  ProductItem:
+    type: object
+    required:
+    - name
+    - price
+    properties:
+      _id:
+        type: string
+        format: uuid
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      name:
+        type: string
+        example: T-shirt
+      brand:
+        type: string
+        example: Nike
+      price:
+        type: number
+        format: double
+        example: 56.48
+      color:
+        type: string
+        example: red
+      size:
+        type: string
+        example: XS
+      lastModifiedDate:
+        type: string
+        format: date-time
+        example: "2018-07-21T17:32:28Z"
